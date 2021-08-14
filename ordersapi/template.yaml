@@ -10,7 +10,7 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: ordersapi
-      Handler: org.example.aws.lambda.apis.CreateOrderLambda::handleRcreateOrder
+      Handler: org.example.aws.lambda.apis.CreateOrderLambda::createOrder
       Runtime: java11
       MemorySize: 512
       Events:
@@ -19,3 +19,16 @@ Resources:
           Properties:
             Path: /orders
             Method: POST
+  ReadOrderFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ordersapi
+      Handler: org.example.aws.lambda.apis.ReadOrderLambda::getOrders
+      Runtime: java11
+      MemorySize: 512
+      Events:
+        OrderEvents:
+          Type: Api
+          Properties:
+            Path: /orders
+            Method: GET
