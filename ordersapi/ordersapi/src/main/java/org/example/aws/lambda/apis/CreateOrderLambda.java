@@ -12,11 +12,12 @@ import org.example.aws.lambda.apis.dto.Order;
 
 public class CreateOrderLambda {
 
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final DynamoDB dynamoDB = new DynamoDB(AmazonDynamoDBClientBuilder.defaultClient());
+
     public APIGatewayProxyResponseEvent createOrder(APIGatewayProxyRequestEvent request) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
         Order order = mapper.readValue(request.getBody(), Order.class);
 
-        DynamoDB dynamoDB = new DynamoDB(AmazonDynamoDBClientBuilder.defaultClient());
         Table table = dynamoDB.getTable(System.getenv("ORDERS_TABLE"));
         Item item = new Item()
                 .withPrimaryKey("id", order.id)
