@@ -9,6 +9,7 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -22,7 +23,8 @@ public class PatientCheckoutLamdba {
     private final AmazonSNS sns = AmazonSNSClientBuilder.defaultClient();
 
     public void handler(S3Event event, Context context) {
-        var logger = context.getLogger();
+        var logger = LoggerFactory.getLogger(PatientCheckoutLamdba.class);
+        //var logger = context.getLogger();
         event.getRecords().forEach(record -> {
             var s3Entry = record.getS3();
             try (var s3inputStream =
@@ -30,21 +32,17 @@ public class PatientCheckoutLamdba {
                     .getObjectContent() ) {
                 var patientCheckoutEvents =
                         Arrays.asList(objectMapper.readValue(s3inputStream, PatientCheckoutEvent[].class));
-                logger.log(patientCheckoutEvents.toString());
+                logger.info(patientCheckoutEvents.toString());
 
                 patientCheckoutEvents.forEach(checkoutEvent -> {
                     try {
                         sns.publish(PATIENT_CHECKOUT_TOPIC, objectMapper.writeValueAsString(checkoutEvent));
                     } catch (JsonProcessingException e) {
-                        var writer = new StringWriter();
-                        e.printStackTrace(new PrintWriter(writer));
-                        logger.log(writer.toString());
+                        logger.error("", e);
                     }
                 });
             } catch (IOException e) {
-                var writer = new StringWriter();
-                e.printStackTrace(new PrintWriter(writer));
-                logger.log(writer.toString());
+                logger.error("", e);
             }
         });
     }
