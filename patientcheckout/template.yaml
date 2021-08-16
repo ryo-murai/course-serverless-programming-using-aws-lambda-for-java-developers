@@ -11,6 +11,8 @@ Globals:
     Timeout: 20
 
 Resources:
+  ClaimManagementQueue:
+    Type: AWS::SQS::Queue
   PatientCheckoutDLQ:
     Type: AWS::SNS::Topic
   PatientCheckoutBucket:
@@ -57,6 +59,19 @@ Resources:
           Type: SNS # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Topic: !Ref PatientCheckoutTopic
+  ClaimManagementFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: patientcheckout
+      Handler: org.example.patientcheckout.ClaimManagementLambda::handler
+      Runtime: java11
+      MemorySize: 512
+      Events:
+        ClaimEvent:
+          Type: SQS # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Queue: !GetAtt ClaimManagementQueue.Arn
+            BatchSize: 10
   ErrorHandlingFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
