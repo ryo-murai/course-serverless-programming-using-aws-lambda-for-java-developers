@@ -39,10 +39,12 @@ public class PatientCheckoutLamdba {
                         sns.publish(PATIENT_CHECKOUT_TOPIC, objectMapper.writeValueAsString(checkoutEvent));
                     } catch (JsonProcessingException e) {
                         logger.error("", e);
+                        throw new RuntimeException("error while writing S3", e);
                     }
                 });
             } catch (IOException e) {
                 logger.error("", e);
+                throw new RuntimeException("error while reading event", e);
             }
         });
     }
